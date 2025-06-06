@@ -12,7 +12,7 @@ export const useAuth = () => {
 };
 
 // Configure axios base URL
-axios.defaults.baseURL = "http://localhost:8000"; // Adjust to your backend URL
+axios.defaults.baseURL = "http://127.0.0.1:8000";
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -34,8 +34,8 @@ export const AuthProvider = ({ children }) => {
             if (token) {
                 try {
                     const response = await axios.get("/api/auth/me");
-                    if (response.data.success) {
-                        setUser(response.data.user);
+                    if (response.data && response.data.id) {
+                        setUser(response.data);
                     } else {
                         localStorage.removeItem("token");
                         setToken(null);
@@ -54,9 +54,15 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            const response = await axios.post("/api/auth/login-json", {
-                username,
-                password,
+            // Use form data (this is the working method)
+            const formData = new URLSearchParams();
+            formData.append("username", username);
+            formData.append("password", password);
+
+            const response = await axios.post("/api/auth/login", formData, {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
             });
 
             const { access_token, user: userData } = response.data;
@@ -75,11 +81,17 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        localStorage.removeItem("token");
-        setToken(null);
-        setUser(null);
-        delete axios.defaults.headers.common["Authorization"];
+    const logout = async () => {
+        try {
+            await axios.post("/api/auth/logout");
+        } catch (error) {
+            console.error("Logout error:", error);
+        } finally {
+            localStorage.removeItem("token");
+            setToken(null);
+            setUser(null);
+            delete axios.defaults.headers.common["Authorization"];
+        }
     };
 
     const value = {
