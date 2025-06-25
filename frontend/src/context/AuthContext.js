@@ -18,6 +18,18 @@ export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [token, setToken] = useState(localStorage.getItem("token"));
+    const [selectedClinic, setSelectedClinic] = useState(
+        JSON.parse(localStorage.getItem("selectedClinic")) || null
+    );
+
+    // Available clinics
+    const clinics = [
+        { id: "CL_1", name: "Nasirabad", manager: "MD Nizam Uddin" },
+        { id: "CL_2", name: "Jalalabad", manager: "Mohsinul Islam" },
+        { id: "CL_3", name: "Chandgaon", manager: "Motaher Uddin" },
+        { id: "CL_4", name: "Amanbazar", manager: "ATM Khairul Bashar" },
+        { id: "CL_5", name: "Saraipara", manager: "Ranjit Kumar Seal" },
+    ];
 
     // Configure axios defaults
     useEffect(() => {
@@ -36,6 +48,24 @@ export const AuthProvider = ({ children }) => {
                     const response = await axios.get("/api/auth/me");
                     if (response.data && response.data.id) {
                         setUser(response.data);
+
+                        // Set default clinic for non-system-admin users
+                        if (
+                            response.data.role !== "system_admin" &&
+                            response.data.clinic_id &&
+                            !selectedClinic
+                        ) {
+                            const userClinic = clinics.find(
+                                (c) => c.id === response.data.clinic_id
+                            );
+                            if (userClinic) {
+                                setSelectedClinic(userClinic);
+                                localStorage.setItem(
+                                    "selectedClinic",
+                                    JSON.stringify(userClinic)
+                                );
+                            }
+                        }
                     } else {
                         localStorage.removeItem("token");
                         setToken(null);
@@ -54,7 +84,6 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (username, password) => {
         try {
-            // Use form data (this is the working method)
             const formData = new URLSearchParams();
             formData.append("username", username);
             formData.append("password", password);
@@ -66,10 +95,23 @@ export const AuthProvider = ({ children }) => {
             });
 
             const { access_token, user: userData } = response.data;
-
             localStorage.setItem("token", access_token);
             setToken(access_token);
             setUser(userData);
+
+            // Set default clinic for non-system-admin users
+            if (userData.role !== "system_admin" && userData.clinic_id) {
+                const userClinic = clinics.find(
+                    (c) => c.id === userData.clinic_id
+                );
+                if (userClinic) {
+                    setSelectedClinic(userClinic);
+                    localStorage.setItem(
+                        "selectedClinic",
+                        JSON.stringify(userClinic)
+                    );
+                }
+            }
 
             return { success: true };
         } catch (error) {
@@ -88,10 +130,38 @@ export const AuthProvider = ({ children }) => {
             console.error("Logout error:", error);
         } finally {
             localStorage.removeItem("token");
+            localStorage.removeItem("selectedClinic");
             setToken(null);
             setUser(null);
+            setSelectedClinic(null);
             delete axios.defaults.headers.common["Authorization"];
         }
+    };
+
+    const switchClinic = (clinic) => {
+        setSelectedClinic(clinic);
+        localStorage.setItem("selectedClinic", JSON.stringify(clinic));
+    };
+
+    // Check if user has access to specific module
+    const hasModuleAccess = (module) => {
+        if (!user) return false;
+
+        // System admin has access to everything
+        if (user.role === "system_admin") return true;
+
+        // Clinic manager has access to all modules in their clinic
+        if (user.role === "clinic_manager") return true;
+
+        // Staff have specific module access
+        const moduleAccess = {
+            counselor: ["outdoor"],
+            emoc_staff: ["emoc"],
+            rdf_staff: ["rdf"],
+            outdoor_staff: ["outdoor"],
+        };
+
+        return moduleAccess[user.role]?.includes(module) || false;
     };
 
     const value = {
@@ -100,6 +170,10 @@ export const AuthProvider = ({ children }) => {
         logout,
         loading,
         isAuthenticated: !!user,
+        clinics,
+        selectedClinic,
+        switchClinic,
+        hasModuleAccess,
     };
 
     return (
