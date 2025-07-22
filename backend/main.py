@@ -7,7 +7,7 @@ import os
 from contextlib import asynccontextmanager
 
 # Import routers
-from app.routers import auth, dashboard, users
+from app.routers import auth, dashboard, users, finance
 
 # Configure logging
 logging.basicConfig(
@@ -94,6 +94,8 @@ app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 
 app.include_router(users.router, prefix="/api/users", tags=["Users"])
+
+app.include_router(finance.router, prefix="/api/finance", tags=["Finance"])
 
 # Static files (for serving uploaded files, if needed)
 # Uncomment if you need to serve static files

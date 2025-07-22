@@ -5,10 +5,18 @@ import {
     Route,
     Navigate,
 } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+
+// Finance Components
+import FinanceDashboard from "./components/finance/FinanceDashboard";
+import RevenueEntry from "./components/finance/RevenueEntry";
+import ExpenseEntry from "./components/finance/ExpenseEntry";
+import BankAccounts from "./components/finance/BankAccounts";
+import FinancialReports from "./components/finance/FinancialReports";
+import FinanceSettings from "./components/finance/FinanceSettings";
 
 // General Pages
 import Patients from "./pages/Patients";
@@ -28,6 +36,18 @@ import OutdoorBilling from "./pages/outdoor/Billing";
 const ProtectedRoute = ({ children }) => {
     const token = localStorage.getItem("token");
     return token ? children : <Navigate to="/login" />;
+};
+
+// Finance Protected Route Component
+const FinanceProtectedRoute = ({ children }) => {
+    const { user } = useAuth();
+    const hasFinanceAccess = user && ["admin", "manager"].includes(user.role);
+
+    if (!hasFinanceAccess) {
+        return <Navigate to="/" replace />;
+    }
+
+    return children;
 };
 
 function App() {
@@ -76,6 +96,70 @@ function App() {
                                 <Route
                                     path="billing"
                                     element={<OutdoorBilling />}
+                                />
+                            </Route>
+
+                            {/* Finance Module Routes - Role Protected */}
+                            <Route path="finance">
+                                <Route
+                                    path="dashboard"
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <FinanceDashboard />
+                                        </FinanceProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="revenue"
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <RevenueEntry />
+                                        </FinanceProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="expenses"
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <ExpenseEntry />
+                                        </FinanceProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="accounts"
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <BankAccounts />
+                                        </FinanceProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="reports"
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <FinancialReports />
+                                        </FinanceProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="settings"
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <FinanceSettings />
+                                        </FinanceProtectedRoute>
+                                    }
+                                />
+                                {/* Finance module index route */}
+                                <Route
+                                    index
+                                    element={
+                                        <FinanceProtectedRoute>
+                                            <Navigate
+                                                to="/finance/dashboard"
+                                                replace
+                                            />
+                                        </FinanceProtectedRoute>
+                                    }
                                 />
                             </Route>
 

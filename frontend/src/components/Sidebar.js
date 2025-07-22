@@ -10,6 +10,7 @@ const Sidebar = () => {
         emoc: false,
         rdf: false,
         logistics: false,
+        finance: false,
     });
 
     const toggleModule = (module) => {
@@ -29,6 +30,9 @@ const Sidebar = () => {
     const isModuleActive = (module) => {
         return location.pathname.startsWith(`/${module}`);
     };
+
+    // Role-based access control for Finance module
+    const showFinanceMenu = user && ["admin", "manager"].includes(user.role);
 
     // Navigation items
     const generalNavItems = [
@@ -120,6 +124,38 @@ const Sidebar = () => {
                 label: "Equipment",
             },
         ],
+        finance: [
+            {
+                path: "/finance/dashboard",
+                icon: "fas fa-chart-line",
+                label: "Finance Dashboard",
+            },
+            {
+                path: "/finance/revenue",
+                icon: "fas fa-plus-circle",
+                label: "Revenue Entry",
+            },
+            {
+                path: "/finance/expenses",
+                icon: "fas fa-minus-circle",
+                label: "Expense Entry",
+            },
+            {
+                path: "/finance/accounts",
+                icon: "fas fa-university",
+                label: "Bank Accounts",
+            },
+            {
+                path: "/finance/reports",
+                icon: "fas fa-file-alt",
+                label: "Financial Reports",
+            },
+            {
+                path: "/finance/settings",
+                icon: "fas fa-cogs",
+                label: "Finance Settings",
+            },
+        ],
     };
 
     const moduleInfo = {
@@ -146,6 +182,12 @@ const Sidebar = () => {
             icon: "fas fa-truck",
             color: "text-purple-600",
             bgColor: "bg-purple-50",
+        },
+        finance: {
+            name: "Finance & Accounts",
+            icon: "fas fa-dollar-sign",
+            color: "text-yellow-600",
+            bgColor: "bg-yellow-50",
         },
     };
 
@@ -204,56 +246,65 @@ const Sidebar = () => {
                         Clinic Modules
                     </h3>
 
-                    {Object.entries(moduleInfo).map(([moduleKey, module]) => (
-                        <div key={moduleKey} className="mb-4">
-                            {/* Module Header */}
-                            <button
-                                onClick={() => toggleModule(moduleKey)}
-                                className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                                    isModuleActive(moduleKey)
-                                        ? `${module.bgColor} ${module.color}`
-                                        : "text-gray-700 hover:bg-gray-100"
-                                }`}
-                            >
-                                <div className="flex items-center">
-                                    <i
-                                        className={`${module.icon} w-5 h-5 mr-3`}
-                                    ></i>
-                                    {module.name}
-                                </div>
-                                <i
-                                    className={`fas fa-chevron-${
-                                        expandedModules[moduleKey]
-                                            ? "up"
-                                            : "down"
-                                    } text-xs`}
-                                ></i>
-                            </button>
+                    {Object.entries(moduleInfo).map(([moduleKey, module]) => {
+                        // Hide finance module if user doesn't have access
+                        if (moduleKey === "finance" && !showFinanceMenu) {
+                            return null;
+                        }
 
-                            {/* Module Items */}
-                            {expandedModules[moduleKey] && (
-                                <ul className="mt-2 ml-6 space-y-1">
-                                    {moduleNavItems[moduleKey].map((item) => (
-                                        <li key={item.path}>
-                                            <Link
-                                                to={item.path}
-                                                className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
-                                                    isActive(item.path)
-                                                        ? `${module.bgColor} ${module.color}`
-                                                        : "text-gray-600 hover:bg-gray-50"
-                                                }`}
-                                            >
-                                                <i
-                                                    className={`${item.icon} w-4 h-4 mr-3`}
-                                                ></i>
-                                                {item.label}
-                                            </Link>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    ))}
+                        return (
+                            <div key={moduleKey} className="mb-4">
+                                {/* Module Header */}
+                                <button
+                                    onClick={() => toggleModule(moduleKey)}
+                                    className={`w-full flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                                        isModuleActive(moduleKey)
+                                            ? `${module.bgColor} ${module.color}`
+                                            : "text-gray-700 hover:bg-gray-100"
+                                    }`}
+                                >
+                                    <div className="flex items-center">
+                                        <i
+                                            className={`${module.icon} w-5 h-5 mr-3`}
+                                        ></i>
+                                        {module.name}
+                                    </div>
+                                    <i
+                                        className={`fas fa-chevron-${
+                                            expandedModules[moduleKey]
+                                                ? "up"
+                                                : "down"
+                                        } text-xs`}
+                                    ></i>
+                                </button>
+
+                                {/* Module Items */}
+                                {expandedModules[moduleKey] && (
+                                    <ul className="mt-2 ml-6 space-y-1">
+                                        {moduleNavItems[moduleKey].map(
+                                            (item) => (
+                                                <li key={item.path}>
+                                                    <Link
+                                                        to={item.path}
+                                                        className={`flex items-center px-3 py-2 text-sm rounded-lg transition-colors ${
+                                                            isActive(item.path)
+                                                                ? `${module.bgColor} ${module.color}`
+                                                                : "text-gray-600 hover:bg-gray-50"
+                                                        }`}
+                                                    >
+                                                        <i
+                                                            className={`${item.icon} w-4 h-4 mr-3`}
+                                                        ></i>
+                                                        {item.label}
+                                                    </Link>
+                                                </li>
+                                            )
+                                        )}
+                                    </ul>
+                                )}
+                            </div>
+                        );
+                    })}
                 </div>
             </nav>
 
