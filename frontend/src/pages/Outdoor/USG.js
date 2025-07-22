@@ -4,82 +4,85 @@ import { useAuth } from "../../context/AuthContext";
 
 const USG = () => {
     const { selectedClinic } = useAuth();
-    const [usgRecords, setUsgRecords] = useState([]);
+    const [usgTests, setUsgTests] = useState([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
     const [filterType, setFilterType] = useState("all");
 
-    // Mock data for USG records
-    const mockUsgRecords = [
+    // Mock data for USG tests
+    const mockUsgTests = [
         {
             id: "USG001",
             patientId: "OPD001",
             patientName: "Fatima Begum",
+            age: 28,
+            gender: "Female",
             visitId: "OPD-V001",
-            usgType: "Obstetric",
-            indication: "Routine pregnancy checkup",
+            usgType: "Abdominal USG",
+            indication: "Abdominal pain",
             orderedBy: "Dr. Rahman",
             orderDate: "2024-01-15",
             scheduledDate: "2024-01-16",
             scheduledTime: "10:00 AM",
             status: "scheduled",
-            technician: "Sonographer Ahmed",
+            technician: "Mr. Karim",
             findings: null,
             cost: 1200,
         },
         {
             id: "USG002",
-            patientId: "OPD002",
-            patientName: "Mohammad Rahman",
-            visitId: "OPD-V002",
-            usgType: "Abdominal",
-            indication: "Abdominal pain investigation",
-            orderedBy: "Dr. Sultana",
+            patientId: "OPD003",
+            patientName: "Rashida Khatun",
+            age: 32,
+            gender: "Female",
+            visitId: "OPD-V003",
+            usgType: "Pelvic USG",
+            indication: "Routine checkup",
+            orderedBy: "Dr. Ahmed",
             orderDate: "2024-01-15",
             scheduledDate: "2024-01-15",
             scheduledTime: "03:00 PM",
             status: "completed",
-            technician: "Sonographer Fatima",
-            findings: "Normal liver, gallbladder, and kidneys",
-            cost: 1000,
+            technician: "Ms. Sultana",
+            findings: "Normal pelvic organs",
+            cost: 1500,
         },
         {
             id: "USG003",
-            patientId: "OPD003",
-            patientName: "Rashida Khatun",
-            visitId: "OPD-V003",
-            usgType: "Pelvic",
-            indication: "Pelvic examination",
-            orderedBy: "Dr. Ahmed",
+            patientId: "OPD002",
+            patientName: "Mohammad Rahman",
+            age: 45,
+            gender: "Male",
+            visitId: "OPD-V002",
+            usgType: "Cardiac Echo",
+            indication: "Chest pain evaluation",
+            orderedBy: "Dr. Sultana",
             orderDate: "2024-01-15",
-            scheduledDate: "2024-01-15",
-            scheduledTime: "04:30 PM",
+            scheduledDate: "2024-01-16",
+            scheduledTime: "11:30 AM",
             status: "in-progress",
-            technician: "Sonographer Ahmed",
+            technician: "Dr. Hasan",
             findings: null,
-            cost: 800,
+            cost: 2000,
         },
     ];
 
     useEffect(() => {
         setTimeout(() => {
-            setUsgRecords(mockUsgRecords);
+            setUsgTests(mockUsgTests);
             setLoading(false);
         }, 1000);
     }, []);
 
-    const filteredRecords = usgRecords.filter((record) => {
+    const filteredTests = usgTests.filter((test) => {
         const matchesSearch =
-            record.patientName
-                .toLowerCase()
-                .includes(searchTerm.toLowerCase()) ||
-            record.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            record.indication.toLowerCase().includes(searchTerm.toLowerCase());
+            test.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            test.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            test.usgType.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus =
-            filterStatus === "all" || record.status === filterStatus;
-        const matchesType =
-            filterType === "all" || record.usgType === filterType;
+            filterStatus === "all" || test.status === filterStatus;
+        const matchesType = filterType === "all" || test.usgType === filterType;
         return matchesSearch && matchesStatus && matchesType;
     });
 
@@ -89,8 +92,20 @@ const USG = () => {
             "in-progress": "bg-yellow-100 text-yellow-800",
             completed: "bg-green-100 text-green-800",
             cancelled: "bg-red-100 text-red-800",
+            "no-show": "bg-gray-100 text-gray-800",
         };
         return statusStyles[status] || "bg-gray-100 text-gray-800";
+    };
+
+    const getStatusIcon = (status) => {
+        const statusIcons = {
+            scheduled: "fas fa-calendar-check",
+            "in-progress": "fas fa-spinner",
+            completed: "fas fa-check-circle",
+            cancelled: "fas fa-times-circle",
+            "no-show": "fas fa-user-times",
+        };
+        return statusIcons[status] || "fas fa-question-circle";
     };
 
     if (loading) {
@@ -108,22 +123,31 @@ const USG = () => {
                 <div className="flex justify-between items-center">
                     <div>
                         <h1 className="text-2xl font-bold text-gray-900">
-                            USG Records
+                            USG & Imaging
                         </h1>
                         <p className="text-gray-600">
                             {selectedClinic
                                 ? `${selectedClinic.name} Clinic`
                                 : "All Clinics"}{" "}
-                            - Ultrasound Management
+                            - Ultrasound & Imaging Management
                         </p>
                     </div>
-                    <Link
-                        to="/outdoor/usg/new"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                    >
-                        <i className="fas fa-plus"></i>
-                        <span>Schedule USG</span>
-                    </Link>
+                    <div className="flex space-x-3">
+                        <Link
+                            to="/outdoor/usg/new"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                        >
+                            <i className="fas fa-plus"></i>
+                            <span>Schedule USG</span>
+                        </Link>
+                        <Link
+                            to="/outdoor/usg/schedule"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                        >
+                            <i className="fas fa-calendar-alt"></i>
+                            <span>Schedule</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -132,14 +156,14 @@ const USG = () => {
                 <div className="bg-white p-6 rounded-lg shadow border">
                     <div className="flex items-center">
                         <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                            <i className="fas fa-heartbeat text-xl"></i>
+                            <i className="fas fa-procedures text-xl"></i>
                         </div>
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-600">
                                 Total USG
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
-                                {usgRecords.length}
+                                {usgTests.length}
                             </p>
                         </div>
                     </div>
@@ -148,7 +172,7 @@ const USG = () => {
                 <div className="bg-white p-6 rounded-lg shadow border">
                     <div className="flex items-center">
                         <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-                            <i className="fas fa-calendar text-xl"></i>
+                            <i className="fas fa-calendar-check text-xl"></i>
                         </div>
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-600">
@@ -156,8 +180,8 @@ const USG = () => {
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
                                 {
-                                    usgRecords.filter(
-                                        (r) => r.status === "scheduled"
+                                    usgTests.filter(
+                                        (t) => t.status === "scheduled"
                                     ).length
                                 }
                             </p>
@@ -176,8 +200,8 @@ const USG = () => {
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
                                 {
-                                    usgRecords.filter(
-                                        (r) => r.status === "in-progress"
+                                    usgTests.filter(
+                                        (t) => t.status === "in-progress"
                                     ).length
                                 }
                             </p>
@@ -196,8 +220,8 @@ const USG = () => {
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
                                 {
-                                    usgRecords.filter(
-                                        (r) => r.status === "completed"
+                                    usgTests.filter(
+                                        (t) => t.status === "completed"
                                     ).length
                                 }
                             </p>
@@ -214,7 +238,7 @@ const USG = () => {
                             <i className="fas fa-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                             <input
                                 type="text"
-                                placeholder="Search USG records..."
+                                placeholder="Search USG tests..."
                                 className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -227,10 +251,11 @@ const USG = () => {
                             onChange={(e) => setFilterType(e.target.value)}
                         >
                             <option value="all">All Types</option>
-                            <option value="Obstetric">Obstetric</option>
-                            <option value="Abdominal">Abdominal</option>
-                            <option value="Pelvic">Pelvic</option>
-                            <option value="Cardiac">Cardiac</option>
+                            <option value="Abdominal USG">Abdominal USG</option>
+                            <option value="Pelvic USG">Pelvic USG</option>
+                            <option value="Cardiac Echo">Cardiac Echo</option>
+                            <option value="Thyroid USG">Thyroid USG</option>
+                            <option value="Breast USG">Breast USG</option>
                         </select>
 
                         <select
@@ -243,17 +268,18 @@ const USG = () => {
                             <option value="in-progress">In Progress</option>
                             <option value="completed">Completed</option>
                             <option value="cancelled">Cancelled</option>
+                            <option value="no-show">No Show</option>
                         </select>
                     </div>
 
                     <div className="text-sm text-gray-600">
-                        Showing {filteredRecords.length} of {usgRecords.length}{" "}
-                        records
+                        Showing {filteredTests.length} of {usgTests.length}{" "}
+                        tests
                     </div>
                 </div>
             </div>
 
-            {/* USG Records Table */}
+            {/* USG Tests Table */}
             <div className="bg-white rounded-lg shadow border overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -272,6 +298,9 @@ const USG = () => {
                                     Schedule
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Technician
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Status
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -283,83 +312,107 @@ const USG = () => {
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {filteredRecords.map((record) => (
-                                <tr
-                                    key={record.id}
-                                    className="hover:bg-gray-50"
-                                >
+                            {filteredTests.map((test) => (
+                                <tr key={test.id} className="hover:bg-gray-50">
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm font-medium text-gray-900">
-                                            {record.id}
+                                            {test.id}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            {record.orderDate}
+                                            {test.orderDate}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            {record.patientName}
-                                        </div>
-                                        <div className="text-sm text-gray-500">
-                                            Visit: {record.visitId}
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-8 w-8">
+                                                <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                    <i
+                                                        className={`fas ${
+                                                            test.gender ===
+                                                            "Female"
+                                                                ? "fa-female"
+                                                                : "fa-male"
+                                                        } text-blue-600 text-sm`}
+                                                    ></i>
+                                                </div>
+                                            </div>
+                                            <div className="ml-3">
+                                                <div className="text-sm font-medium text-gray-900">
+                                                    {test.patientName}
+                                                </div>
+                                                <div className="text-sm text-gray-500">
+                                                    Age: {test.age}
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <div className="text-sm font-medium text-gray-900">
-                                            {record.usgType} USG
+                                            {test.usgType}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            {record.indication}
+                                            Indication: {test.indication}
                                         </div>
-                                        <div className="text-xs text-gray-500">
-                                            By: {record.orderedBy}
+                                        <div className="text-sm text-gray-500">
+                                            By: {test.orderedBy}
                                         </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                            {record.scheduledDate}
+                                            {test.scheduledDate}
                                         </div>
                                         <div className="text-sm text-gray-500">
-                                            {record.scheduledTime}
+                                            {test.scheduledTime}
                                         </div>
-                                        {record.technician && (
-                                            <div className="text-xs text-gray-500">
-                                                {record.technician}
-                                            </div>
-                                        )}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        {test.technician}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(
-                                                record.status
+                                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(
+                                                test.status
                                             )}`}
                                         >
-                                            {record.status}
+                                            <i
+                                                className={`${getStatusIcon(
+                                                    test.status
+                                                )} mr-1`}
+                                            ></i>
+                                            {test.status.replace("-", " ")}
                                         </span>
-                                        {record.findings && (
+                                        {test.findings && (
                                             <div className="text-xs text-gray-600 mt-1">
                                                 Findings available
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        ৳{record.cost}
+                                        ৳{test.cost}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div className="flex items-center space-x-2">
                                             <Link
-                                                to={`/outdoor/usg/${record.id}`}
+                                                to={`/outdoor/usg/${test.id}`}
                                                 className="text-blue-600 hover:text-blue-900"
                                                 title="View Details"
                                             >
                                                 <i className="fas fa-eye"></i>
                                             </Link>
-                                            {record.status === "completed" && (
+                                            {test.status === "completed" && (
                                                 <button
                                                     className="text-green-600 hover:text-green-900"
                                                     title="Print Report"
                                                 >
                                                     <i className="fas fa-print"></i>
+                                                </button>
+                                            )}
+                                            {test.status === "scheduled" && (
+                                                <button
+                                                    className="text-yellow-600 hover:text-yellow-900"
+                                                    title="Start USG"
+                                                >
+                                                    <i className="fas fa-play"></i>
                                                 </button>
                                             )}
                                             <button
@@ -377,11 +430,11 @@ const USG = () => {
                 </div>
             </div>
 
-            {filteredRecords.length === 0 && (
+            {filteredTests.length === 0 && (
                 <div className="text-center py-12">
-                    <i className="fas fa-heartbeat text-gray-400 text-4xl mb-4"></i>
+                    <i className="fas fa-procedures text-gray-400 text-4xl mb-4"></i>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
-                        No USG records found
+                        No USG tests found
                     </h3>
                     <p className="text-gray-500">
                         Try adjusting your search or filter criteria.

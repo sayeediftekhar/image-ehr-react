@@ -8,90 +8,69 @@ const OutdoorBilling = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
     const [filterStatus, setFilterStatus] = useState("all");
-    const [filterDate, setFilterDate] = useState("today");
+    const [filterPayment, setFilterPayment] = useState("all");
 
     // Mock data for outdoor billing
     const mockBills = [
         {
-            id: "OPD-BILL-001",
+            id: "BILL001",
             patientId: "OPD001",
             patientName: "Fatima Begum",
             visitId: "OPD-V001",
             billDate: "2024-01-15",
-            items: [
-                {
-                    name: "Consultation Fee",
-                    quantity: 1,
-                    rate: 500,
-                    amount: 500,
-                },
-                { name: "CBC Test", quantity: 1, rate: 500, amount: 500 },
-                { name: "Medicine", quantity: 1, rate: 200, amount: 200 },
+            services: [
+                { name: "Consultation Fee", cost: 500 },
+                { name: "Complete Blood Count (CBC)", cost: 500 },
+                { name: "Medicine", cost: 200 },
             ],
             subtotal: 1200,
             discount: 100,
             total: 1100,
             paid: 1100,
             due: 0,
-            status: "paid",
+            paymentStatus: "paid",
             paymentMethod: "cash",
+            status: "completed",
         },
         {
-            id: "OPD-BILL-002",
+            id: "BILL002",
             patientId: "OPD002",
             patientName: "Mohammad Rahman",
             visitId: "OPD-V002",
             billDate: "2024-01-15",
-            items: [
-                {
-                    name: "Consultation Fee",
-                    quantity: 1,
-                    rate: 500,
-                    amount: 500,
-                },
-                { name: "Lipid Profile", quantity: 1, rate: 800, amount: 800 },
-                {
-                    name: "Abdominal USG",
-                    quantity: 1,
-                    rate: 1000,
-                    amount: 1000,
-                },
+            services: [
+                { name: "Consultation Fee", cost: 500 },
+                { name: "Lipid Profile", cost: 800 },
+                { name: "Cardiac Echo", cost: 2000 },
             ],
-            subtotal: 2300,
+            subtotal: 3300,
             discount: 0,
-            total: 2300,
-            paid: 1000,
-            due: 1300,
-            status: "partial",
+            total: 3300,
+            paid: 1500,
+            due: 1800,
+            paymentStatus: "partial",
             paymentMethod: "cash",
+            status: "pending",
         },
         {
-            id: "OPD-BILL-003",
+            id: "BILL003",
             patientId: "OPD003",
             patientName: "Rashida Khatun",
             visitId: "OPD-V003",
             billDate: "2024-01-15",
-            items: [
-                {
-                    name: "Consultation Fee",
-                    quantity: 1,
-                    rate: 500,
-                    amount: 500,
-                },
-                {
-                    name: "Routine Urine Test",
-                    quantity: 1,
-                    rate: 300,
-                    amount: 300,
-                },
+            services: [
+                { name: "Consultation Fee", cost: 500 },
+                { name: "Routine Urine Examination", cost: 300 },
+                { name: "Pelvic USG", cost: 1500 },
             ],
-            subtotal: 800,
-            discount: 50,
-            total: 750,
+            subtotal: 2300,
+            discount: 200,
+            total: 2100,
             paid: 0,
-            due: 750,
-            status: "pending",
+            due: 2100,
+            paymentStatus: "unpaid",
             paymentMethod: null,
+            status: "pending",
         },
     ];
 
@@ -108,14 +87,25 @@ const OutdoorBilling = () => {
             bill.id.toLowerCase().includes(searchTerm.toLowerCase());
         const matchesStatus =
             filterStatus === "all" || bill.status === filterStatus;
-        return matchesSearch && matchesStatus;
+        const matchesPayment =
+            filterPayment === "all" || bill.paymentStatus === filterPayment;
+        return matchesSearch && matchesStatus && matchesPayment;
     });
 
-    const getStatusBadge = (status) => {
+    const getPaymentStatusBadge = (status) => {
+        const statusStyles = {
+            paid: "bg-green-100 text-green-800",
+            partial: "bg-yellow-100 text-yellow-800",
+            unpaid: "bg-red-100 text-red-800",
+            refunded: "bg-blue-100 text-blue-800",
+        };
+        return statusStyles[status] || "bg-gray-100 text-gray-800";
+    };
+
+    const getBillStatusBadge = (status) => {
         const statusStyles = {
             pending: "bg-yellow-100 text-yellow-800",
-            partial: "bg-blue-100 text-blue-800",
-            paid: "bg-green-100 text-green-800",
+            completed: "bg-green-100 text-green-800",
             cancelled: "bg-red-100 text-red-800",
         };
         return statusStyles[status] || "bg-gray-100 text-gray-800";
@@ -148,13 +138,22 @@ const OutdoorBilling = () => {
                             - OPD Billing Management
                         </p>
                     </div>
-                    <Link
-                        to="/outdoor/billing/new"
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
-                    >
-                        <i className="fas fa-plus"></i>
-                        <span>Create Bill</span>
-                    </Link>
+                    <div className="flex space-x-3">
+                        <Link
+                            to="/outdoor/billing/new"
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                        >
+                            <i className="fas fa-plus"></i>
+                            <span>Create Bill</span>
+                        </Link>
+                        <Link
+                            to="/outdoor/billing/reports"
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
+                        >
+                            <i className="fas fa-chart-bar"></i>
+                            <span>Reports</span>
+                        </Link>
+                    </div>
                 </div>
             </div>
 
@@ -183,7 +182,7 @@ const OutdoorBilling = () => {
                         </div>
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-600">
-                                Revenue
+                                Total Revenue
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
                                 ৳{totalRevenue.toLocaleString()}
@@ -215,7 +214,7 @@ const OutdoorBilling = () => {
                         </div>
                         <div className="ml-4">
                             <p className="text-sm font-medium text-gray-600">
-                                Pending
+                                Pending Bills
                             </p>
                             <p className="text-2xl font-bold text-gray-900">
                                 {
@@ -245,25 +244,24 @@ const OutdoorBilling = () => {
 
                         <select
                             className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            value={filterDate}
-                            onChange={(e) => setFilterDate(e.target.value)}
-                        >
-                            <option value="today">Today</option>
-                            <option value="yesterday">Yesterday</option>
-                            <option value="week">This Week</option>
-                            <option value="month">This Month</option>
-                        </select>
-
-                        <select
-                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             value={filterStatus}
                             onChange={(e) => setFilterStatus(e.target.value)}
                         >
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
-                            <option value="partial">Partial</option>
-                            <option value="paid">Paid</option>
+                            <option value="completed">Completed</option>
                             <option value="cancelled">Cancelled</option>
+                        </select>
+
+                        <select
+                            className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            value={filterPayment}
+                            onChange={(e) => setFilterPayment(e.target.value)}
+                        >
+                            <option value="all">All Payments</option>
+                            <option value="paid">Paid</option>
+                            <option value="partial">Partial</option>
+                            <option value="unpaid">Unpaid</option>
                         </select>
                     </div>
 
@@ -286,13 +284,16 @@ const OutdoorBilling = () => {
                                     Patient
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Services
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Amount
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Payment
+                                    Payment Status
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Status
+                                    Bill Status
                                 </th>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Actions
@@ -318,40 +319,66 @@ const OutdoorBilling = () => {
                                             Visit: {bill.visitId}
                                         </div>
                                     </td>
-                                    <td className="px-6 py-4 whitespace-nowrap">
-                                        <div className="text-sm font-medium text-gray-900">
-                                            ৳{bill.total.toLocaleString()}
+                                    <td className="px-6 py-4">
+                                        <div className="text-sm text-gray-900">
+                                            {bill.services
+                                                .slice(0, 2)
+                                                .map((service, index) => (
+                                                    <div
+                                                        key={index}
+                                                        className="flex justify-between"
+                                                    >
+                                                        <span>
+                                                            {service.name}
+                                                        </span>
+                                                        <span>
+                                                            ৳{service.cost}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            {bill.services.length > 2 && (
+                                                <div className="text-xs text-gray-500">
+                                                    +{bill.services.length - 2}{" "}
+                                                    more services
+                                                </div>
+                                            )}
                                         </div>
-                                        {bill.discount > 0 && (
-                                            <div className="text-sm text-green-600">
-                                                Discount: ৳{bill.discount}
-                                            </div>
-                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <div className="text-sm text-gray-900">
-                                            Paid: ৳{bill.paid.toLocaleString()}
+                                            <div>Total: ৳{bill.total}</div>
+                                            <div className="text-green-600">
+                                                Paid: ৳{bill.paid}
+                                            </div>
+                                            {bill.due > 0 && (
+                                                <div className="text-red-600">
+                                                    Due: ৳{bill.due}
+                                                </div>
+                                            )}
                                         </div>
-                                        {bill.due > 0 && (
-                                            <div className="text-sm text-red-600">
-                                                Due: ৳
-                                                {bill.due.toLocaleString()}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <span
+                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getPaymentStatusBadge(
+                                                bill.paymentStatus
+                                            )}`}
+                                        >
+                                            {bill.paymentStatus}
+                                        </span>
+                                        {bill.paymentMethod && (
+                                            <div className="text-xs text-gray-500 mt-1">
+                                                via {bill.paymentMethod}
                                             </div>
                                         )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap">
                                         <span
-                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusBadge(
+                                            className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getBillStatusBadge(
                                                 bill.status
                                             )}`}
                                         >
                                             {bill.status}
                                         </span>
-                                        {bill.paymentMethod && (
-                                            <div className="text-xs text-gray-500 mt-1 capitalize">
-                                                {bill.paymentMethod}
-                                            </div>
-                                        )}
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                         <div className="flex items-center space-x-2">
@@ -369,13 +396,12 @@ const OutdoorBilling = () => {
                                                 <i className="fas fa-print"></i>
                                             </button>
                                             {bill.due > 0 && (
-                                                <Link
-                                                    to={`/outdoor/billing/${bill.id}/payment`}
+                                                <button
                                                     className="text-purple-600 hover:text-purple-900"
                                                     title="Collect Payment"
                                                 >
                                                     <i className="fas fa-money-bill"></i>
-                                                </Link>
+                                                </button>
                                             )}
                                             <button
                                                 className="text-gray-600 hover:text-gray-900"
@@ -394,7 +420,7 @@ const OutdoorBilling = () => {
 
             {filteredBills.length === 0 && (
                 <div className="text-center py-12">
-                    <i className="fas fa-file-invoice-dollar text-gray-400 text-4xl mb-4"></i>
+                    <i className="fas fa-file-invoice text-gray-400 text-4xl mb-4"></i>
                     <h3 className="text-lg font-medium text-gray-900 mb-2">
                         No bills found
                     </h3>
